@@ -1,2 +1,35 @@
 rssagg
 .env
+.cursorindexingignore
+# Environment files
+.env.local
+.env.production
+
+# Database
+*.db
+*.sqlite
+
+# Go
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Build
+main
+rssagg
