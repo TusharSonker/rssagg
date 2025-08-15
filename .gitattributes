@@ -3,3 +3,6 @@
 *.html linguist-language=HTML
 *.js linguist-language=JavaScript
 *.css linguist-language=CSS
+# Force Go as primary
+*.go linguist-detectable=true
+*.html linguist-detectable=false
