@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RSSAgg — Reader</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { height: 100%; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.65); }
+    @media(prefers-color-scheme: dark){ .glass { background: rgba(17,24,39,0.65); } }
+  </style>
+</head>
+<body class="min-h-full bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100">
+  <header class="sticky top-0 z-10 border-b border-slate-200/70 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
+    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight">
+        <span class="text-indigo-600 dark:text-indigo-400">RSS</span>Agg
+      </h1>
+      <div class="flex items-center gap-2">
+        <input id="apiKeyInput" type="text" placeholder="API key" class="w-64 hidden sm:block rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <button id="saveApiKeyBtn" class="rounded-md bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-sm font-semibold text-white">Save Key</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-6">
+    <!-- Hero / actions -->
+    <section class="glass rounded-xl p-6 shadow-sm ring-1 ring-slate-900/5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Create user -->
+        <div class="col-span-1">
+          <h2 class="font-semibold mb-2">Create account</h2>
+          <p class="text-sm text-slate-500 mb-3">Creates a user and returns an API key. Saved locally to call protected endpoints.</p>
+          <form id="createUserForm" class="space-y-3">
+            <input id="userName" class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Your name" required />
+            <button class="w-full rounded-md bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm font-semibold text-white">Create User</button>
+          </form>
+          <div id="createdKey" class="hidden mt-3 text-xs break-all"></div>
+        </div>
+
+        <!-- Create feed -->
+        <div class="col-span-1">
+          <h2 class="font-semibold mb-2">Create feed</h2>
+          <p class="text-sm text-slate-500 mb-3">Requires API key. URL must be a valid RSS URL and unique.</p>
+          <form id="createFeedForm" class="space-y-3">
+            <input id="feedName" class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Feed name" required />
+            <input id="feedURL" type="url" class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://example.com/rss.xml" required />
+            <button class="w-full rounded-md bg-emerald-600 hover:bg-emerald-700 px-3 py-2 text-sm font-semibold text-white">Create Feed</button>
+          </form>
+        </div>
+
+        <!-- Health -->
+        <div class="col-span-1">
+          <h2 class="font-semibold mb-2">Server status</h2>
+          <p class="text-sm text-slate-500 mb-3">Ping the API to verify connectivity.</p>
+          <div class="flex gap-2">
+            <button id="healthBtn" class="rounded-md bg-slate-800 hover:bg-slate-900 px-3 py-2 text-sm font-semibold text-white">Check Health</button>
+            <span id="healthStatus" class="text-sm"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feeds & follows -->
+    <section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="glass rounded-xl p-6 shadow-sm ring-1 ring-slate-900/5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold">All Feeds</h2>
+          <button id="refreshFeeds" class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
+        </div>
+        <ul id="feedsList" class="space-y-2 text-sm"></ul>
+      </div>
+      <div class="glass rounded-xl p-6 shadow-sm ring-1 ring-slate-900/5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold">Your Follows</h2>
+          <button id="refreshFollows" class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
+        </div>
+        <ul id="followsList" class="space-y-2 text-sm"></ul>
+      </div>
+    </section>
+
+    <!-- Posts -->
+    <section class="mt-8 glass rounded-xl p-6 shadow-sm ring-1 ring-slate-900/5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold">Your Latest Posts</h2>
+        <button id="refreshPosts" class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">Scraper runs every ~minute. Posts appear after you follow feeds.</p>
+      <ul id="postsList" class="space-y-3"></ul>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden rounded-md bg-slate-900/90 text-white px-4 py-2 text-sm shadow-lg"></div>
+
+  <script>
+    const API_BASE = '/v1';
+
+    // Utilities
+    const showToast = (msg, ok = true) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.background = ok ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)';
+      setTimeout(() => el.classList.add('hidden'), 2200);
+    };
+
+    const getApiKey = () => localStorage.getItem('rssagg_api_key') || '';
+
+    const authHeaders = () => {
+      const k = getApiKey();
+      return k ? { 'Authorisation': `ApiKey ${k}` } : {};
+    };
+
+    const request = async (path, opts = {}) => {
+      const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+      const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`${res.status} ${res.statusText}: ${text}`);
+      }
+      return res.json();
+    };
+
+    // Keep all feeds in memory for lookup when rendering follows
+    let allFeeds = [];
+    // Cache user's follows for grouping posts by feed
+    let myFollows = [];
+
+    // DOM elements
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const createUserForm = document.getElementById('createUserForm');
+    const createdKey = document.getElementById('createdKey');
+    const createFeedForm = document.getElementById('createFeedForm');
+    const feedsList = document.getElementById('feedsList');
+    const followsList = document.getElementById('followsList');
+    const postsList = document.getElementById('postsList');
+    const refreshFeeds = document.getElementById('refreshFeeds');
+    const refreshFollows = document.getElementById('refreshFollows');
+    const refreshPosts = document.getElementById('refreshPosts');
+    const healthBtn = document.getElementById('healthBtn');
+    const healthStatus = document.getElementById('healthStatus');
+
+    // Load stored API key
+    apiKeyInput.value = getApiKey();
+
+    saveApiKeyBtn.addEventListener('click', () => {
+      const val = apiKeyInput.value.trim();
+      if (!val) { showToast('Enter an API key first', false); return; }
+      localStorage.setItem('rssagg_api_key', val);
+      showToast('API key saved');
+      refreshAll();
+    });
+
+    // Create user
+    createUserForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('userName').value.trim();
+      try {
+        const user = await request('/users', { method: 'POST', body: JSON.stringify({ name }) });
+        localStorage.setItem('rssagg_api_key', user.api_key);
+        apiKeyInput.value = user.api_key;
+        createdKey.classList.remove('hidden');
+        createdKey.textContent = `API Key: ${user.api_key}`;
+        showToast('User created');
+        refreshAll();
+      } catch (err) {
+        showToast(err.message || 'Failed to create user', false);
+      }
+    });
+
+    // Create feed
+    createFeedForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('feedName').value.trim();
+      const url = document.getElementById('feedURL').value.trim();
+      try {
+        await request('/feeds', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ name, url }) });
+        showToast('Feed created');
+        document.getElementById('feedName').value = '';
+        document.getElementById('feedURL').value = '';
+        await loadFeeds();
+      } catch (err) {
+        showToast(err.message || 'Failed to create feed', false);
+      }
+    });
+
+    // Load feeds
+    async function loadFeeds() {
+      feedsList.innerHTML = '<li class="text-xs text-slate-500">Loading…</li>';
+      try {
+        const feeds = await request('/feeds');
+        // store for quick lookup when rendering follows
+        allFeeds = feeds;
+        if (!feeds.length) {
+          feedsList.innerHTML = '<li class="text-xs text-slate-500">No feeds yet.</li>';
+          return;
+        }
+        feedsList.innerHTML = '';
+        feeds.forEach(f => {
+          const li = document.createElement('li');
+          li.className = 'flex items-center justify-between rounded border border-slate-200 dark:border-slate-800 px-3 py-2';
+          li.innerHTML = `
+            <div>
+              <div class="font-medium">${f.name}</div>
+              <a href="${f.url}" target="_blank" class="text-xs text-indigo-600 dark:text-indigo-400">${f.url}</a>
+            </div>
+            <button class="text-xs rounded bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1">Follow</button>
+          `;
+          li.querySelector('button').addEventListener('click', async () => {
+            try {
+              await request('/feed_follow', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ feed_id: f.id }) });
+              showToast('Followed');
+              await loadFollows();
+            } catch (err) {
+              showToast(err.message || 'Failed to follow', false);
+            }
+          });
+          feedsList.appendChild(li);
+        });
+      } catch (err) {
+        feedsList.innerHTML = `<li class="text-xs text-rose-500">${err.message}</li>`;
+      }
+    }
+
+    // Load follows
+    async function loadFollows() {
+      followsList.innerHTML = '<li class="text-xs text-slate-500">Loading…</li>';
+      try {
+        const follows = await request('/feed_follows', { headers: authHeaders() });
+        if (!follows.length) {
+          followsList.innerHTML = '<li class="text-xs text-slate-500">You are not following any feeds yet.</li>';
+          return;
+        }
+        followsList.innerHTML = '';
+        myFollows = follows;
+        follows.forEach(ff => {
+          const feed = allFeeds.find(f => f.id === ff.feed_id);
+          const name = feed ? feed.name : `Feed ${ff.feed_id}`;
+          const urlHtml = feed ? `<a href="${feed.url}" target="_blank" class="text-xs text-indigo-600 dark:text-indigo-400">${feed.url}</a>` : '';
+          const li = document.createElement('li');
+          li.className = 'flex items-center justify-between rounded border border-slate-200 dark:border-slate-800 px-3 py-2';
+          li.innerHTML = `
+            <div>
+              <div class="font-medium">${name}</div>
+              ${urlHtml}
+            </div>
+            <button class="text-xs rounded bg-rose-600 hover:bg-rose-700 text-white px-2 py-1">Unfollow</button>
+          `;
+          li.querySelector('button').addEventListener('click', async () => {
+            try {
+              await request(`/feed_follow/${ff.id}`, { method: 'DELETE', headers: authHeaders() });
+              showToast('Unfollowed');
+              await loadFollows();
+              await loadPosts();
+            } catch (err) {
+              showToast(err.message || 'Failed to unfollow', false);
+            }
+          });
+          followsList.appendChild(li);
+        });
+      } catch (err) {
+        followsList.innerHTML = `<li class="text-xs text-rose-500">${err.message}</li>`;
+      }
+    }
+
+    // Load posts
+    async function loadPosts() {
+      postsList.innerHTML = '<li class="text-xs text-slate-500">Loading…</li>';
+      try {
+        const posts = await request('/user_posts?limit=100', { headers: authHeaders() });
+        if (!posts.length) {
+          postsList.innerHTML = '<li class="text-xs text-slate-500">No posts yet. Give the scraper a minute.</li>';
+          return;
+        }
+        postsList.innerHTML = '';
+
+        // Group posts by feed to ensure we display multiple posts from each followed feed
+        const byFeed = posts.reduce((acc, p) => {
+          (acc[p.feed_id] = acc[p.feed_id] || []).push(p);
+          return acc;
+        }, {});
+
+        // Render per follow, using feed name header
+        myFollows.forEach(ff => {
+          const feed = allFeeds.find(f => f.id === ff.feed_id);
+          const name = feed ? feed.name : `Feed ${ff.feed_id}`;
+          const url = feed ? feed.url : '';
+          const group = byFeed[ff.feed_id] || [];
+          if (!group.length) return;
+
+          const header = document.createElement('li');
+          header.className = 'pt-2 text-sm font-semibold text-slate-700 dark:text-slate-200';
+          header.innerHTML = `${name} ${url ? `<a class="text-xs text-indigo-600 dark:text-indigo-400" target="_blank" href="${url}">( ${url} )</a>` : ''}`;
+          postsList.appendChild(header);
+
+          group.slice(0, 10).forEach(p => {
+            const li = document.createElement('li');
+            li.className = 'rounded border border-slate-200 dark:border-slate-800 p-4';
+            const desc = p.description ? `<p class="mt-1 text-sm text-slate-500">${p.description}</p>` : '';
+            const date = p.published_at ? new Date(p.published_at).toLocaleString() : '';
+            li.innerHTML = `
+              <a class="font-medium text-indigo-600 dark:text-indigo-400 hover:underline" href="${p.url}" target="_blank">${p.title}</a>
+              ${desc}
+              <div class="mt-2 text-xs text-slate-400">${date}</div>
+            `;
+            postsList.appendChild(li);
+          });
+        });
+      } catch (err) {
+        postsList.innerHTML = `<li class="text-xs text-rose-500">${err.message}</li>`;
+      }
+    }
+
+    // Health check
+    healthBtn.addEventListener('click', async () => {
+      healthStatus.textContent = '…';
+      try {
+        await request('/healthz');
+        healthStatus.textContent = 'OK';
+        healthStatus.className = 'text-sm text-emerald-600';
+      } catch {
+        healthStatus.textContent = 'DOWN';
+        healthStatus.className = 'text-sm text-rose-600';
+      }
+    });
+
+    // Refresh buttons
+    refreshFeeds.addEventListener('click', loadFeeds);
+    refreshFollows.addEventListener('click', loadFollows);
+    refreshPosts.addEventListener('click', loadPosts);
+
+    async function refreshAll(){
+      await loadFeeds();
+      try { await loadFollows(); } catch {}
+      try { await loadPosts(); } catch {}
+    }
+
+    // Initial load
+    refreshAll();
+  </script>
+</body>
+</html> 
