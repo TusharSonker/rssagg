@@ -1,0 +1,5 @@
+*.go linguist-language=Go
+*.sql linguist-language=SQL
+*.html linguist-language=HTML
+*.js linguist-language=JavaScript
+*.css linguist-language=CSS
