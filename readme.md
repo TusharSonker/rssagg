@@ -1,4 +1,5 @@
 # RSSAgg - RSS Aggregator
+## A Modern Web Scraper
 
 A full-stack RSS reader built with Go, PostgreSQL, and a modern web frontend.
 
@@ -32,4 +33,3 @@ A full-stack RSS reader built with Go, PostgreSQL, and a modern web frontend.
 
 ## License
 MIT
-EOF
