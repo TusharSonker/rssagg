@@ -1,0 +1,7 @@
+# Replace with your real domain
+tusharsonker.dev {
+  encode zstd gzip
+  reverse_proxy app:8080
+}
+
+
