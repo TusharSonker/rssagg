@@ -62,21 +62,17 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Mount all API routes under /projects/rssagg
-	apiRouter := chi.NewRouter()
-
-	apiRouter.Get("/healthz", handlerReadiness)
-	apiRouter.Get("/err", handlerErr)
-	apiRouter.Post("/users", apiCfg.handlerCreateUser)
-	apiRouter.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
-	apiRouter.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))
-	apiRouter.Get("/feeds", apiCfg.handlerGetFeeds)
-	apiRouter.Post("/feed_follow", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
-	apiRouter.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
-	apiRouter.Delete("/feed_follow/{feedFollowId}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
-	apiRouter.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
-
-	router.Mount("/projects/rssagg", apiRouter)
+	// Mount all API routes at root
+	router.Get("/healthz", handlerReadiness)
+	router.Get("/err", handlerErr)
+	router.Post("/users", apiCfg.handlerCreateUser)
+	router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
+	router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))
+	router.Get("/feeds", apiCfg.handlerGetFeeds)
+	router.Post("/feed_follow", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
+	router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
+	router.Delete("/feed_follow/{feedFollowId}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
+	router.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 
 	// Serve the frontend (single-page app) from ./public at /projects/rssagg and all subpaths
 	router.Get("/projects/rssagg*", func(w http.ResponseWriter, r *http.Request) {
