@@ -65,6 +65,7 @@ func (cfg *apiConfig) handlerGetUserPosts(w http.ResponseWriter, r *http.Request
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error couldn't get posts: %v", err))
+		return
 	}
 
 	respondWithJSON(w, http.StatusOK, databasePostsToPosts(posts))

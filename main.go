@@ -33,11 +33,19 @@ func main() {
 		log.Fatal("DB_URL is not found in the environment")
 	}
 
+	log.Printf("Connecting to database: %s", dbURL)
 	conn, err := sql.Open("postgres", dbURL)
 
 	if err != nil {
 		log.Fatal("Can't connect to Database: ", err)
 	}
+
+	// Verify connection
+	if err := conn.Ping(); err != nil {
+		log.Fatal("Database ping failed: ", err)
+	}
+
+	log.Println("Database connection established successfully")
 	dbQueries := database.New(conn)
 	apiCfg := apiConfig{
 		DB: dbQueries,

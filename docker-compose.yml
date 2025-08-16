@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
     environment:
       PORT: "8080"
-      DB_URL: "postgresql://postgres.eatzjqkjcdtlxyakywzx:tushar@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
+      DB_URL: "postgresql://postgres.eatzjqkjcdtlxyakywzx:tushar@aws-1-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require"
     depends_on:
       - db
   caddy:
