@@ -2,7 +2,7 @@
 
 http://tusharsonker.dev {
   encode zstd gzip
-  handle_path /projects/rssagg* {
+  handle /projects/rssagg* {
     reverse_proxy app:8080
   }
 }
