@@ -142,7 +142,7 @@
     class="fixed bottom-4 right-4 hidden rounded-md bg-slate-900/90 text-white px-4 py-2 text-sm shadow-lg"></div>
 
   <script>
-    const API_BASE = '/projects/rssagg/v1';
+    const API_BASE = '/projects/rssagg';
 
     // Utilities
     const showToast = (msg, ok = true) => {
@@ -167,7 +167,14 @@
         const text = await res.text().catch(() => '');
         throw new Error(`${res.status} ${res.statusText}: ${text}`);
       }
-      return res.json();
+      // Avoid JSON.parse error on empty response
+      const text = await res.text();
+      if (!text) return {};
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error('Invalid JSON response');
+      }
     };
 
     // Keep all feeds in memory for lookup when rendering follows
