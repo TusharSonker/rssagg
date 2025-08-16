@@ -28,13 +28,22 @@ services:
   caddy:
     image: caddy:2
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+    # No public ports when using Cloudflare Tunnel
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:
       - app
+
+  # Cloudflare Tunnel to expose the app to the internet without a public IPv4
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    depends_on:
+      - caddy
+    # Provide your token at runtime via env or a .env file
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
 
 volumes:
   dbdata:
