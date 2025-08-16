@@ -66,11 +66,8 @@ func main() {
 	router.Delete("/feed_follow/{feedFollowId}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
 	router.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 
-	// Serve the frontend (single-page app) from ./public at /projects/rssagg and /projects/rssagg/
-	router.Get("/projects/rssagg", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/index.html")
-	})
-	router.Get("/projects/rssagg/", func(w http.ResponseWriter, r *http.Request) {
+	// Serve the frontend (single-page app) from ./public at /projects/rssagg and all subpaths
+	router.Get("/projects/rssagg*", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./public/index.html")
 	})
 
