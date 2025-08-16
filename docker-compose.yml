@@ -1,11 +1,11 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_DB: rssagg
       POSTGRES_USER: rssagg
       POSTGRES_PASSWORD: rssaggpass
+      POSTGRES_DB: rssagg
     volumes:
       - dbdata:/var/lib/postgresql/data
       - ./sql/schema:/docker-entrypoint-initdb.d:ro
@@ -22,9 +22,7 @@ services:
       PORT: "8080"
       DB_URL: "postgresql://rssagg:rssaggpass@db:5432/rssagg?sslmode=disable"
     depends_on:
-      db:
-        condition: service_healthy
-
+      - db
   caddy:
     image: caddy:2
     restart: unless-stopped
@@ -38,14 +36,9 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
-    depends_on:
-      - caddy
-    # Provide your token at runtime via env or a .env file
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    volumes:
+      - /home/ec2-user/.cloudflared:/etc/cloudflared:ro
+    command: tunnel --config /etc/cloudflared/config.yml run 3fd4180c-9e73-467b-9883-8c239f667539
 
 volumes:
   dbdata:
-
-
