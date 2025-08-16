@@ -79,6 +79,11 @@ func main() {
 		http.ServeFile(w, r, "./public/index.html")
 	})
 
+	// Also serve the frontend at the root URL for local development
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./public/index.html")
+	})
+
 	srv := &http.Server{
 		Handler: router,
 		Addr:    ":" + portString,
