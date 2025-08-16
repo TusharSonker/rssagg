@@ -68,8 +68,14 @@ func main() {
 
 	router.Mount("/v1", v1Router)
 
-	// Serve the frontend (single-page app) from ./public at root
+	// Serve the frontend (single-page app) from ./public at root and at /projects/rssagg
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./public/index.html")
+	})
+	router.Get("/projects/rssagg", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./public/index.html")
+	})
+	router.Get("/projects/rssagg/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./public/index.html")
 	})
 

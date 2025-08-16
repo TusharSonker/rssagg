@@ -1,7 +1,10 @@
 # Replace with your real domain
+
 http://tusharsonker.dev {
   encode zstd gzip
-  reverse_proxy app:8080
+  handle_path /projects/rssagg* {
+    reverse_proxy app:8080
+  }
 }
 
 
