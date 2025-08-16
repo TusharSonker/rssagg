@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,22 +10,46 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { color-scheme: light dark; }
-    html, body { height: 100%; }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
-    .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.65); }
-    @media(prefers-color-scheme: dark){ .glass { background: rgba(17,24,39,0.65); } }
+    :root {
+      color-scheme: light dark;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    .glass {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.65);
+    }
+
+    @media(prefers-color-scheme: dark) {
+      .glass {
+        background: rgba(17, 24, 39, 0.65);
+      }
+    }
   </style>
 </head>
-<body class="min-h-full bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100">
-  <header class="sticky top-0 z-10 border-b border-slate-200/70 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
+
+<body
+  class="min-h-full bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100">
+  <header
+    class="sticky top-0 z-10 border-b border-slate-200/70 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
     <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
       <h1 class="text-xl sm:text-2xl font-bold tracking-tight">
         <span class="text-indigo-600 dark:text-indigo-400">RSS</span>Agg
       </h1>
       <div class="flex items-center gap-2">
-        <input id="apiKeyInput" type="text" placeholder="API key" class="w-64 hidden sm:block rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        <button id="saveApiKeyBtn" class="rounded-md bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-sm font-semibold text-white">Save Key</button>
+        <input id="apiKeyInput" type="text" placeholder="API key"
+          class="w-64 hidden sm:block rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <button id="saveApiKeyBtn"
+          class="rounded-md bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-sm font-semibold text-white">Save
+          Key</button>
       </div>
     </div>
   </header>
@@ -36,10 +61,15 @@
         <!-- Create user -->
         <div class="col-span-1">
           <h2 class="font-semibold mb-2">Create account</h2>
-          <p class="text-sm text-slate-500 mb-3">Creates a user and returns an API key. Saved locally to call protected endpoints.</p>
+          <p class="text-sm text-slate-500 mb-3">Creates a user and returns an API key. Saved locally to call protected
+            endpoints.</p>
           <form id="createUserForm" class="space-y-3">
-            <input id="userName" class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Your name" required />
-            <button class="w-full rounded-md bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm font-semibold text-white">Create User</button>
+            <input id="userName"
+              class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Your name" required />
+            <button
+              class="w-full rounded-md bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm font-semibold text-white">Create
+              User</button>
           </form>
           <div id="createdKey" class="hidden mt-3 text-xs break-all"></div>
         </div>
@@ -49,9 +79,15 @@
           <h2 class="font-semibold mb-2">Create feed</h2>
           <p class="text-sm text-slate-500 mb-3">Requires API key. URL must be a valid RSS URL and unique.</p>
           <form id="createFeedForm" class="space-y-3">
-            <input id="feedName" class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Feed name" required />
-            <input id="feedURL" type="url" class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://example.com/rss.xml" required />
-            <button class="w-full rounded-md bg-emerald-600 hover:bg-emerald-700 px-3 py-2 text-sm font-semibold text-white">Create Feed</button>
+            <input id="feedName"
+              class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Feed name" required />
+            <input id="feedURL" type="url"
+              class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="https://example.com/rss.xml" required />
+            <button
+              class="w-full rounded-md bg-emerald-600 hover:bg-emerald-700 px-3 py-2 text-sm font-semibold text-white">Create
+              Feed</button>
           </form>
         </div>
 
@@ -60,7 +96,9 @@
           <h2 class="font-semibold mb-2">Server status</h2>
           <p class="text-sm text-slate-500 mb-3">Ping the API to verify connectivity.</p>
           <div class="flex gap-2">
-            <button id="healthBtn" class="rounded-md bg-slate-800 hover:bg-slate-900 px-3 py-2 text-sm font-semibold text-white">Check Health</button>
+            <button id="healthBtn"
+              class="rounded-md bg-slate-800 hover:bg-slate-900 px-3 py-2 text-sm font-semibold text-white">Check
+              Health</button>
             <span id="healthStatus" class="text-sm"></span>
           </div>
         </div>
@@ -72,14 +110,16 @@
       <div class="glass rounded-xl p-6 shadow-sm ring-1 ring-slate-900/5">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-semibold">All Feeds</h2>
-          <button id="refreshFeeds" class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
+          <button id="refreshFeeds"
+            class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
         </div>
         <ul id="feedsList" class="space-y-2 text-sm"></ul>
       </div>
       <div class="glass rounded-xl p-6 shadow-sm ring-1 ring-slate-900/5">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-semibold">Your Follows</h2>
-          <button id="refreshFollows" class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
+          <button id="refreshFollows"
+            class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
         </div>
         <ul id="followsList" class="space-y-2 text-sm"></ul>
       </div>
@@ -89,7 +129,8 @@
     <section class="mt-8 glass rounded-xl p-6 shadow-sm ring-1 ring-slate-900/5">
       <div class="flex items-center justify-between mb-3">
         <h2 class="font-semibold">Your Latest Posts</h2>
-        <button id="refreshPosts" class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
+        <button id="refreshPosts"
+          class="text-xs rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-1">Refresh</button>
       </div>
       <p class="text-xs text-slate-500 mb-3">Scraper runs every ~minute. Posts appear after you follow feeds.</p>
       <ul id="postsList" class="space-y-3"></ul>
@@ -97,10 +138,11 @@
   </main>
 
   <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 right-4 hidden rounded-md bg-slate-900/90 text-white px-4 py-2 text-sm shadow-lg"></div>
+  <div id="toast"
+    class="fixed bottom-4 right-4 hidden rounded-md bg-slate-900/90 text-white px-4 py-2 text-sm shadow-lg"></div>
 
   <script>
-    const API_BASE = '/v1';
+    const API_BASE = '/projects/rssagg/v1';
 
     // Utilities
     const showToast = (msg, ok = true) => {
@@ -337,14 +379,15 @@
     refreshFollows.addEventListener('click', loadFollows);
     refreshPosts.addEventListener('click', loadPosts);
 
-    async function refreshAll(){
+    async function refreshAll() {
       await loadFeeds();
-      try { await loadFollows(); } catch {}
-      try { await loadPosts(); } catch {}
+      try { await loadFollows(); } catch { }
+      try { await loadPosts(); } catch { }
     }
 
     // Initial load
     refreshAll();
   </script>
 </body>
-</html> 
+
+</html>
