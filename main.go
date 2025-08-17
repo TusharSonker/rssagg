@@ -62,24 +62,30 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Mount all API routes at root
-	router.Get("/healthz", handlerReadiness)
-	router.Get("/err", handlerErr)
-	router.Post("/users", apiCfg.handlerCreateUser)
-	router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
-	router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))
-	router.Get("/feeds", apiCfg.handlerGetFeeds)
-	router.Post("/feed_follow", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
-	router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
-	router.Delete("/feed_follow/{feedFollowId}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
-	router.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
+	// Mount everything (API + SPA) under /projects/rssagg so production domain works there
+	router.Route("/projects/rssagg", func(r chi.Router) {
+		// API routes (now prefixed in final path)
+		r.Get("/healthz", handlerReadiness)
+		r.Get("/err", handlerErr)
+		r.Post("/users", apiCfg.handlerCreateUser)
+		r.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
+		r.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))
+		r.Get("/feeds", apiCfg.handlerGetFeeds)
+		r.Post("/feed_follow", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
+		r.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
+		r.Delete("/feed_follow/{feedFollowId}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
+		r.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 
-	// Serve the frontend (single-page app) from ./public at /projects/rssagg and all subpaths
-	router.Get("/projects/rssagg*", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/index.html")
+		// Serve SPA index for the base path and any other subpath (client-side routing)
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./public/index.html")
+		})
+		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./public/index.html")
+		})
 	})
 
-	// Also serve the frontend at the root URL for local development
+	// Keep root serving index for local development without prefix (optional)
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./public/index.html")
 	})

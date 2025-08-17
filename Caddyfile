@@ -2,6 +2,7 @@
 
 http://tusharsonker.dev {
   encode zstd gzip
+  # Proxy all prefixed SPA + API paths to the Go app
   handle /projects/rssagg* {
     reverse_proxy app:8080
   }
