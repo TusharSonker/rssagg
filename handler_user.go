@@ -44,29 +44,23 @@ func (cfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, use
 }
 
 func (cfg *apiConfig) handlerGetUserPosts(w http.ResponseWriter, r *http.Request, user database.User) {
-	// Optional limit query param, default to 50, clamp to [1, 100]
-	var limit int32 = 50
+	// Interpret 'limit' as per-feed limit
+	var perFeed int32 = 10
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		if v, err := strconv.Atoi(limitStr); err == nil {
 			if v < 1 {
 				v = 1
 			}
-			if v > 100 {
-				v = 100
+			if v > 50 {
+				v = 50
 			}
-			limit = int32(v)
+			perFeed = int32(v)
 		}
 	}
-
-	posts, err := cfg.DB.GetPostsForUser(r.Context(), database.GetPostsForUserParams{
-		UserID: user.ID,
-		Limit:  limit,
-	})
-
+	posts, err := cfg.DB.GetPostsForUserPerFeed(r.Context(), user.ID, perFeed)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error couldn't get posts: %v", err))
 		return
 	}
-
 	respondWithJSON(w, http.StatusOK, databasePostsToPosts(posts))
 }
