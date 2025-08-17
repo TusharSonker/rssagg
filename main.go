@@ -77,10 +77,8 @@ func main() {
 		r.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 
 		// Serve SPA index for the base path and any other subpath (client-side routing)
+		// Only serve index at the base; no wildcard so API routes aren't shadowed
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "./public/index.html")
-		})
-		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "./public/index.html")
 		})
 	})
