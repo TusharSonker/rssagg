@@ -161,7 +161,7 @@
     };
 
     const request = async (path, opts = {}) => {
-      const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+      const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json', ...(opts.headers || {}) };
       const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
       if (!res.ok) {
         const text = await res.text().catch(() => '');
