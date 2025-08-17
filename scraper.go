@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -30,6 +31,28 @@ type RSSItem struct {
 	Link        string `xml:"link"`
 	Description string `xml:"description"`
 	PubDate     string `xml:"pubDate"`
+}
+
+var pubDateLayouts = []string{
+	time.RFC1123Z,
+	time.RFC1123,
+	time.RFC822Z,
+	time.RFC822,
+	time.RFC850,
+	"Mon, 02 Jan 2006 15:04:05 -0700", // common variant
+	"Mon, 02 Jan 2006 15:04:05 MST",   // with TZ name
+	"2006-01-02T15:04:05Z07:00",       // RFC3339
+	"2006-01-02 15:04:05 -0700",       // space separated
+}
+
+func parsePubDate(s string) (time.Time, error) {
+	s = strings.TrimSpace(s)
+	for _, layout := range pubDateLayouts {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("unsupported pubDate format: %s", s)
 }
 
 func fetchFeed(feedURL string) (*RSSFeed, error) {
@@ -76,9 +99,9 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 			description.Valid = true
 		}
 
-		pubAt, err := time.Parse(time.RFC1123Z, item.PubDate)
+		pubAt, err := parsePubDate(item.PubDate)
 		if err != nil {
-			log.Printf("Couldn't parse pubData %v with err %v", item.PubDate, err)
+			log.Printf("Couldn't parse pubDate %q: %v", item.PubDate, err)
 			continue
 		}
 
