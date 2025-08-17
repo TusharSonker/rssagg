@@ -68,16 +68,18 @@ func (cfg *apiConfig) handlerCreateFeedFollow(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	log.Printf("feed follow created user=%s feed=%s follow_id=%s", user.ID, params.FeedId, feedFollow.ID)
 	respondWithJSON(w, http.StatusCreated, databaseFeedFollowToFeedFollow(feedFollow))
 }
 
 func (cfg *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Request, user database.User) {
 	feedFollows, err := cfg.DB.GetFeedFollowsForUser(r.Context(), user.ID)
 	if err != nil {
+		log.Printf("get feed follows error user=%s: %v", user.ID, err)
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get feed follows")
 		return
 	}
-
+	log.Printf("feed follows fetched user=%s count=%d", user.ID, len(feedFollows))
 	respondWithJSON(w, http.StatusOK, databaseFeedFollowsToFeedFollows(feedFollows))
 }
 
