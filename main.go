@@ -62,16 +62,15 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Mount everything (API + SPA) under /projects/rssagg so production domain works there
-	router.Route("/projects/rssagg", func(r chi.Router) {
-		// Logging middleware for debugging follow/posts issues
+	// Dedicated API under /projects/rssagg/api to isolate from SPA routing/caching
+	router.Route("/projects/rssagg/api", func(r chi.Router) {
+		// Logging middleware for API requests
 		r.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				log.Printf("%s %s", r.Method, r.URL.Path)
+				log.Printf("API %s %s", r.Method, r.URL.Path)
 				next.ServeHTTP(w, r)
 			})
 		})
-		// API routes (now prefixed in final path)
 		r.Get("/healthz", handlerReadiness)
 		r.Get("/err", handlerErr)
 		r.Post("/users", apiCfg.handlerCreateUser)
@@ -82,16 +81,15 @@ func main() {
 		r.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
 		r.Delete("/feed_follow/{feedFollowId}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
 		r.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
-
-		// Serve SPA index only at base
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "./public/index.html")
-		})
-
-		// JSON 404 for debugging unexpected paths
+		// Explicit 404
 		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 			respondWithError(w, http.StatusNotFound, "not found")
 		})
+	})
+
+	// Serve SPA under /projects/rssagg (no API routes here now)
+	router.Get("/projects/rssagg", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./public/index.html")
 	})
 
 	// Keep root serving index for local development without prefix (optional)
