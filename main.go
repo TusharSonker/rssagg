@@ -64,6 +64,13 @@ func main() {
 
 	// Mount everything (API + SPA) under /projects/rssagg so production domain works there
 	router.Route("/projects/rssagg", func(r chi.Router) {
+		// Logging middleware for debugging follow/posts issues
+		r.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				log.Printf("%s %s", r.Method, r.URL.Path)
+				next.ServeHTTP(w, r)
+			})
+		})
 		// API routes (now prefixed in final path)
 		r.Get("/healthz", handlerReadiness)
 		r.Get("/err", handlerErr)
@@ -76,10 +83,14 @@ func main() {
 		r.Delete("/feed_follow/{feedFollowId}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
 		r.Get("/user_posts", apiCfg.middlewareAuth(apiCfg.handlerGetUserPosts))
 
-		// Serve SPA index for the base path and any other subpath (client-side routing)
-		// Only serve index at the base; no wildcard so API routes aren't shadowed
+		// Serve SPA index only at base
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "./public/index.html")
+		})
+
+		// JSON 404 for debugging unexpected paths
+		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+			respondWithError(w, http.StatusNotFound, "not found")
 		})
 	})
 

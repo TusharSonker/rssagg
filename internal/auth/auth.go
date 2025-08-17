@@ -11,7 +11,11 @@ import (
 // Expected auth header:
 // Authorisation: APiKey {insert paikey here}
 func GetAPIKey(headers http.Header) (string, error) {
-	val := headers.Get("Authorisation")
+	// Prefer standard American spelling; fall back to British variant for backward compatibility
+	val := headers.Get("Authorization")
+	if val == "" { // legacy header name still used by current frontend
+		val = headers.Get("Authorisation")
+	}
 	if val == "" {
 		return "", errors.New("no authentication value found")
 	}
